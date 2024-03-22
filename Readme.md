@@ -25,7 +25,7 @@ Each line of a gcode file is of the form:
 
     where ARGs are generally of the form X123.22 Y22.3 e.g. [Varname][Value]
 
-these lines are parsed in as [GCodeLine Objects](https://github.com/dyami0123/GCodeHopper/blob/main/src/gcodehopper/gcode_parsing/gcode_line.py) via the "from_string" method. As object, they expose their command types (e.g. G1, G2, Exx) and their various variable values via a public API. e.g. if some code wants access to the "X" value of the specific line object, it uses the line.X property which is populated based parsing of the underlying string
+these lines are parsed in as [GCodeLine Objects](https://github.com/dyami0123/GCodeHopper/blob/main/src/gcodehopper/gcode_parsing/gcode_line.py) via the "from_string(string: str) -> GCodeLine" method. As object, they expose their command types (e.g. G1, G2, Exx) and their various variable values via a public API. e.g. if some code wants access to the "X" value of the specific line object, it uses the line.X property which is populated on init via parsing of the underlying input string.
 
 there is also a parsing of comments done at this stage, but the details of this are to be fleshed out.
 
@@ -35,11 +35,23 @@ The Encoded representation is made up of two main pieces.
 - A [RepresentationState](https://github.com/dyami0123/GCodeHopper/blob/main/src/gcodehopper/encoded_representation/representation_state.py) object, and
 - A set of [Actions](https://github.com/dyami0123/GCodeHopper/blob/main/src/gcodehopper/encoded_representation/actions/abstract_action.py) which update & modify the state. 
 
-The simplest example of this is the move command. Lets say our current state has the tool head at X0,Y0,Z0 and we have a gcode command coming in next that increases the X value by 10. This is represented as an [Action](https://github.com/dyami0123/GCodeHopper/blob/main/src/gcodehopper/encoded_representation/actions/abstract_action.py) which can be applied to a state (modifing it). in the case of our [simple move action](https://github.com/dyami0123/GCodeHopper/blob/main/src/gcodehopper/encoded_representation/actions/move_action.py) our tool coordinates would be updated by the X of the Action object (which was set by the parsed value from the source GCodeLine). 
+The simplest example of this is the move command. Lets say our current state has the tool head at X0,Y0,Z0 and we have a gcode command coming in next that increases the X value by 10. This is represented as an [Action](https://github.com/dyami0123/GCodeHopper/blob/main/src/gcodehopper/encoded_representation/actions/abstract_action.py) which can be applied to a state to create a new, updated state. in the case of our [simple move action](https://github.com/dyami0123/GCodeHopper/blob/main/src/gcodehopper/encoded_representation/actions/move_action.py) our tool coordinates would be updated by the X of the Action object (which was set by the parsed value from the source GCodeLine).
 
-Each Action type is its own, distinct class, inheriting from the AbstractAction AbstractBaseClass which requires an apply_to_state method to be defined. The apply to state method takes in an existing RepresentationState object, and produces a new RepresentationState object (without modify the input state).
+Alongside simple XYZ coordinates, the RepresentationState also encapsulates various other attributes which the GCODE can modify. For instance, some command modify the coordinate system, or the hot end temperature. all of these are tracked via various attributes on the RepresentationState class.
+
+Each Action type is its own, distinct class, inheriting from the AbstractAction AbstractBaseClass which requires an "apply_to_state(state: RepresentationState) -> RepresentationState" method to be defined. The apply to state method takes in an existing RepresentationState object, and produces a new RepresentationState object (without modify the input state).
 
 In this way, with a set of actions and a starting state GCodeHopper can encapsulate all positions that a gcode file describes.
+
+
+## Quick Summary
+
+in one line:
+
+A Gcode file gets parsed into a bunch of GCodeLine objects, which are then converted into a list of AbstractAction subclasses. this list of actions is joined with an initial state to form a RepresentationState object which can be "iterated" through to move through all positions that a GCODE file representations.
+
+*maybe that was two lines..*
+
 
 ### Generating an Encoded Representation
 
@@ -57,6 +69,9 @@ The general appraoch is going to be as follows:
     - the reason for this being that in some cases non tool position parameters will need to be updated in order to compensate for the changes. e.g. a move path gets extended, the extrusion amount will need to be raised so that the right amount of filament gets extruded.
 3. use a grasshopper to modify the XYZ data (and shadow datapoints)
 4. export back into YAML, etc.
+
+
+for testing, i may implement some simple "application modifiers" in python, e.g. one that adds "fuzz" to a print by shifting all consequent xyz points in an out from a center line.
 
 
 ## Test Examples
