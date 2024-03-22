@@ -48,7 +48,7 @@ In this way, with a set of actions and a starting state GCodeHopper can encapsul
 
 in one line:
 
-A Gcode file gets parsed into a bunch of GCodeLine objects, which are then converted into a list of AbstractAction subclasses. this list of actions is joined with an initial state to form a RepresentationState object which can be "iterated" through to move through all positions that a GCODE file representations.
+A Gcode file gets parsed into a bunch of GCodeLine objects, which are then converted into a list of AbstractAction subclasses. this list of actions is joined with an initial state to form a RepresentationState object which can be "iterated" through to move through all positions that a GCODE file represents.
 
 *maybe that was two lines..*
 
