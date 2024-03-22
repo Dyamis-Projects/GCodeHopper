@@ -1,0 +1,13 @@
+name: gcodehopper_dev
+channels:
+  - defaults
+dependencies:
+  - python>=3.9
+  - pip
+  - pydantic
+  - pip:
+    - -e .
+    - isort
+    - black
+    - flake8
+    - pytest

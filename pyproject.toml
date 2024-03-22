@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+target-version = ['py37']
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.pylint]
+disable = [
+    "too-few-public-methods",
+    "too-many-ancestors",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov=src --cov-report=term-missing:skip-covered --cov-fail-under=100"
+testpaths = [
+    "tests",
+]
